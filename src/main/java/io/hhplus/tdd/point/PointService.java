@@ -27,7 +27,7 @@ public class PointService {
         long newBalance = currentUserPoint.point() + amount;
 
         UserPoint upadatedUserPoint = userPointRepository.insertOrUpdate(currentUserPoint.id(), newBalance);
-        pointHistoryRepository.insert(userId, amount, TransactionType.CHARGE, currentUserPoint.updateMillis());
+        pointHistoryRepository.insert(userId, amount, TransactionType.CHARGE, upadatedUserPoint.updateMillis());
 
         return upadatedUserPoint;
     }
