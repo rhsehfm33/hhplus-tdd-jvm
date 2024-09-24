@@ -4,22 +4,22 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import io.hhplus.tdd.database.IPointHistoryRepository;
 import io.hhplus.tdd.database.IUserPointRepository;
-import io.hhplus.tdd.database.PointHistoryTable;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class PointService {
     private final IUserPointRepository userPointRepository;
-    private final PointHistoryTable pointHistoryTable;
+    private final IPointHistoryRepository pointHistoryRepository;
 
     public UserPoint getUserPoint(long userId) {
         return userPointRepository.selectById(userId);
     }
 
     public List<PointHistory> getPointHistories(long userId) {
-        return pointHistoryTable.selectAllByUserId(userId);
+        return pointHistoryRepository.selectAllByUserId(userId);
     }
 
     public UserPoint chargePoint(long userId, long amount) {
@@ -27,7 +27,7 @@ public class PointService {
         long newBalance = currentUserPoint.point() + amount;
 
         UserPoint upadatedUserPoint = userPointRepository.insertOrUpdate(currentUserPoint.id(), newBalance);
-        pointHistoryTable.insert(userId, amount, TransactionType.CHARGE, currentUserPoint.updateMillis());
+        pointHistoryRepository.insert(userId, amount, TransactionType.CHARGE, currentUserPoint.updateMillis());
 
         return upadatedUserPoint;
     }
@@ -37,7 +37,7 @@ public class PointService {
         long newBalance = currentUserPoint.point() - amount;
 
         UserPoint updatedUserPoint = userPointRepository.insertOrUpdate(userId, newBalance);
-        pointHistoryTable.insert(userId, amount, TransactionType.USE, updatedUserPoint.updateMillis());
+        pointHistoryRepository.insert(userId, amount, TransactionType.USE, updatedUserPoint.updateMillis());
 
         return updatedUserPoint;
     }
