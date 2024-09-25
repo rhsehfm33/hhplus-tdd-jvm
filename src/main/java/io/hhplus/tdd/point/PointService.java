@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class PointService {
+    private static final long MAX_BALANCE = 1_000_000L;
+
     private final IUserPointRepository userPointRepository;
     private final IPointHistoryRepository pointHistoryRepository;
 
@@ -25,6 +27,10 @@ public class PointService {
     public UserPoint chargePoint(long userId, long amount) {
         UserPoint currentUserPoint = getUserPoint(userId);
         long newBalance = currentUserPoint.point() + amount;
+
+        if (newBalance > MAX_BALANCE) {
+            throw new IllegalArgumentException("최대 잔액을 초과하여 충전할 수 없습니다.");
+        }
 
         UserPoint upadatedUserPoint = userPointRepository.insertOrUpdate(currentUserPoint.id(), newBalance);
         pointHistoryRepository.insert(userId, amount, TransactionType.CHARGE, upadatedUserPoint.updateMillis());
