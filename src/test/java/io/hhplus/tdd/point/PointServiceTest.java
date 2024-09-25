@@ -94,4 +94,14 @@ class PointServiceTest {
         assertThrows(IllegalArgumentException.class, () -> pointService.chargePoint(userId, amount));
     }
 
+    @Test
+    void testUsePointUnderflow() {
+        long userId = 1L;
+        long amount = 1500L;
+        UserPoint userPointNow = new UserPoint(userId, 1000L, System.currentTimeMillis());
+
+        when(userPointRepository.selectById(userId)).thenReturn(userPointNow);
+
+        assertThrows(IllegalArgumentException.class, () ->  pointService.usePoint(userId, amount));
+    }
 }
