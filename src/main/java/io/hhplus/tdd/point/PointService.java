@@ -29,7 +29,7 @@ public class PointService {
     public UserPoint chargePoint(long userId, long amount) {
         lock.lock();
         try {
-            UserPoint currentUserPoint = getUserPoint(userId);
+            UserPoint currentUserPoint = userPointRepository.selectById(userId);
             long newBalance = currentUserPoint.point() + amount;
 
             if (newBalance > MAX_BALANCE) {
