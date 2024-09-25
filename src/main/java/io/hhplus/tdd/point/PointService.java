@@ -1,6 +1,7 @@
 package io.hhplus.tdd.point;
 
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ public class PointService {
 
     private final IUserPointRepository userPointRepository;
     private final IPointHistoryRepository pointHistoryRepository;
+    private final ReentrantLock lock = new ReentrantLock(true);
 
     public UserPoint getUserPoint(long userId) {
         return userPointRepository.selectById(userId);
@@ -25,17 +27,22 @@ public class PointService {
     }
 
     public UserPoint chargePoint(long userId, long amount) {
-        UserPoint currentUserPoint = getUserPoint(userId);
-        long newBalance = currentUserPoint.point() + amount;
+        lock.lock();
+        try {
+            UserPoint currentUserPoint = getUserPoint(userId);
+            long newBalance = currentUserPoint.point() + amount;
 
-        if (newBalance > MAX_BALANCE) {
-            throw new IllegalArgumentException("최대 잔액을 초과하여 충전할 수 없습니다.");
+            if (newBalance > MAX_BALANCE) {
+                throw new IllegalArgumentException("최대 잔액을 초과하여 충전할 수 없습니다.");
+            }
+
+            UserPoint updatedUserPoint = userPointRepository.insertOrUpdate(currentUserPoint.id(), newBalance);
+            pointHistoryRepository.insert(userId, amount, TransactionType.CHARGE, updatedUserPoint.updateMillis());
+
+            return updatedUserPoint;
+        } finally {
+            lock.unlock();
         }
-
-        UserPoint upadatedUserPoint = userPointRepository.insertOrUpdate(currentUserPoint.id(), newBalance);
-        pointHistoryRepository.insert(userId, amount, TransactionType.CHARGE, upadatedUserPoint.updateMillis());
-
-        return upadatedUserPoint;
     }
 
     public UserPoint usePoint(long userId, long amount) {
