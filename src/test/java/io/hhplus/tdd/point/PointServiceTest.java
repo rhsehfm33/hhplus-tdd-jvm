@@ -82,4 +82,16 @@ class PointServiceTest {
         assertEquals(updatedUserPoint, result);
         verify(pointHistoryRepository).insert(userId, amount, USE, updatedUserPoint.updateMillis());
     }
+
+    @Test
+    void testChargePointOverflow() {
+        long userId = 1L;
+        long amount = 500_000L;
+        UserPoint userPointNow = new UserPoint(userId, 900_000L, System.currentTimeMillis());
+
+        when(userPointRepository.selectById(userId)).thenReturn(userPointNow);
+
+        assertThrows(IllegalArgumentException.class, () -> pointService.chargePoint(userId, amount));
+    }
+
 }
