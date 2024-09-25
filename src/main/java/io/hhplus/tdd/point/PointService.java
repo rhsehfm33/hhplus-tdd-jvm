@@ -46,16 +46,21 @@ public class PointService {
     }
 
     public UserPoint usePoint(long userId, long amount) {
-        UserPoint currentUserPoint = userPointRepository.selectById(userId);
-        long newBalance = currentUserPoint.point() - amount;
+        lock.lock();
+        try {
+            UserPoint currentUserPoint = userPointRepository.selectById(userId);
+            long newBalance = currentUserPoint.point() - amount;
 
-        if (newBalance < 0) {
-            throw new IllegalArgumentException("잔액이 부족합니다.");
+            if (newBalance < 0) {
+                throw new IllegalArgumentException("잔액이 부족합니다.");
+            }
+
+            UserPoint updatedUserPoint = userPointRepository.insertOrUpdate(userId, newBalance);
+            pointHistoryRepository.insert(userId, amount, TransactionType.USE, updatedUserPoint.updateMillis());
+
+            return updatedUserPoint;
+        } finally {
+            lock.unlock();
         }
-
-        UserPoint updatedUserPoint = userPointRepository.insertOrUpdate(userId, newBalance);
-        pointHistoryRepository.insert(userId, amount, TransactionType.USE, updatedUserPoint.updateMillis());
-
-        return updatedUserPoint;
     }
 }
