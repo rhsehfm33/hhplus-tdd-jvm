@@ -42,6 +42,10 @@ public class PointService {
         UserPoint currentUserPoint = userPointRepository.selectById(userId);
         long newBalance = currentUserPoint.point() - amount;
 
+        if (newBalance < 0) {
+            throw new IllegalArgumentException("잔액이 부족합니다.");
+        }
+
         UserPoint updatedUserPoint = userPointRepository.insertOrUpdate(userId, newBalance);
         pointHistoryRepository.insert(userId, amount, TransactionType.USE, updatedUserPoint.updateMillis());
 
