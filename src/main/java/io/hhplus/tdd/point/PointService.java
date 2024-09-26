@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class PointService {
-    private static final long MAX_BALANCE = 1_000_000L;
+    public static final long MAX_BALANCE = 1_000_000L;
 
     private final IUserPointRepository userPointRepository;
     private final IPointHistoryRepository pointHistoryRepository;
