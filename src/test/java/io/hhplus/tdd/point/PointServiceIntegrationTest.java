@@ -1,5 +1,6 @@
 package io.hhplus.tdd.point;
 
+import static io.hhplus.tdd.point.PointService.MAX_BALANCE;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +33,20 @@ public class PointServiceIntegrationTest {
 
     private final long USER_ID = 1L;
 
-    @BeforeAll
+    @BeforeEach
     void setUp() {
         // 사용자 포인트 초기화
         userPointRepository.insertOrUpdate(USER_ID, 0L);
+    }
+
+    @Test
+    void testChargePointOverflow() {
+        assertThrows(IllegalArgumentException.class, () -> pointService.chargePoint(USER_ID, MAX_BALANCE + 1L));
+    }
+
+    @Test
+    void testUsePointUnderflow() {
+        assertThrows(IllegalArgumentException.class, () -> pointService.usePoint(USER_ID, 1L));
     }
 
     @Test
